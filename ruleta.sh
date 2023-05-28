@@ -34,7 +34,7 @@ function martingala(){
 
   backup_bet=$initial_bet
   play_counter=1
-  jugadas_malas="[ "
+  jugadas_malas=""
 
   tput civis #Ocultar el cursor
   while true; do
@@ -43,9 +43,10 @@ function martingala(){
     random_number="$(($RANDOM % 37))"
 #    echo -e "${yellowColour}[+]${endColour}${grayColour} Ha salido el número ${endColour}${yellowColour}$random_number${endColour}"
 
-    if [ ! "$money" -le 0 ]; then
+    if [ ! "$money" -lt 0 ]; then
       if [ "$par_impar" == "par" ]; then
         if [ "$(($random_number % 2))" -eq 0 ]; then
+#          Esta definición es para apostar por números pares
           if [ "$random_number" -eq 0 ]; then
 #            echo -e "${redColour}[!] ha salido el 0, por tanto perdemos${endColour}"
             initial_bet=$(($initial_bet*2))
@@ -66,14 +67,30 @@ function martingala(){
           jugadas_malas+="$random_number "
 #          echo -e "${yellowColour}[+]${endColour}${grayColour} Ahora mismo te quedas en${endColour}${yellowColour} $"$money"${endColour}"
         fi
+      else
+        #Esta definición es para apostar por números impares
+        if [ "$(($random_number % 2))" -eq 1 ]; then
+#            echo -e "${yellowColour}[+]${endColour}${greenColour} El número que ha salido es impar, ¡Ganas!${grayColour}"
+            reward=$(($initial_bet*2))
+#            echo -e "${yellowColour}[+]${endColour}${grayColour} Ganas un total de${endColour}${greenColour} $"$reward"${endColour}"
+            money=$(($money+$reward))
+#            echo -e "${yellowColour}[+]${endColour}${grayColour} Tienes${endColour}${yellowColour} $"$money"${endColour}"
+            initial_bet="$backup_bet"
+            jugadas_malas=""
+        else
+#          echo -e "${yellowColour}[+]${endColour}${redColour} EL número que ha salido es par, ¡Pierdes!${endColour}"
+          initial_bet=$(($initial_bet*2))
+          jugadas_malas+="$random_number "
+#          echo -e "${yellowColour}[+]${endColour}${grayColour} Ahora mismo te quedas en${endColour}${yellowColour} $"$money"${endColour}"
+        fi
       fi
     else
       #Nos quedamos sin dinero
       echo -e "\n${redColour}[!] Te has quedado sin dinero${endColour}\n"
-      echo -e "${yellowColour}[+]${endColour}${grayColour} Han habido un total de${endColour}${yellowColour} $play_counter${endColour}${grayColour} jugadas${endColour}"
+      echo -e "${yellowColour}[+]${endColour}${grayColour} Han habido un total de${endColour}${yellowColour} $(($play_counter-1))${endColour}${grayColour} jugadas${endColour}"
 
       echo -e "\n${yellowColour}[+]${endColour}${grayColour}A continuación se van a representar las malas jugadas consecutivcas que han salido:${endColour}\n"
-  echo -e "${blueColour}$jugadas_malas${endColour}"
+  echo -e "${blueColour}[ $jugadas_malas ]${endColour}"
       tput cnorm; exit 0
     fi
 
